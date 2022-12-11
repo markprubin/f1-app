@@ -137,28 +137,33 @@ def formula_one()
       puts "Type and enter in the respective number to select the race of choice, and push enter to get a synopsis of the race results."
       puts pastel.magenta.bold("--------------------------------------------------------------------------------------------------")
 
-      race = gets.chomp
-
-      response = HTTP.get("https://ergast.com/api/f1/2022/#{race}/results.json")
-      results = response.parse(:json)
-      index = 0
-      puts "PODIUM"
-      3.times do
-        position = results["MRData"]["RaceTable"]["Races"][0]["Results"][index]["position"]
-        #HOW TO DRY UP?
-        if position == "1"
-          position = "1st"
-        elsif position == "2"
-          position = "2nd"
-        elsif position == "3"
-          position = "3rd"
+      while true
+        race = gets.chomp
+        if race.downcase == "m"
+          formula_one()
+        else
+          response = HTTP.get("https://ergast.com/api/f1/2022/#{race}/results.json")
+          results = response.parse(:json)
+          index = 0
+          puts "PODIUM"
+          3.times do
+            position = results["MRData"]["RaceTable"]["Races"][0]["Results"][index]["position"]
+            #HOW TO DRY UP?
+            if position == "1"
+              position = "1st"
+            elsif position == "2"
+              position = "2nd"
+            elsif position == "3"
+              position = "3rd"
+            end
+            family_name = results["MRData"]["RaceTable"]["Races"][0]["Results"][index]["Driver"]["familyName"]
+            given_name = results["MRData"]["RaceTable"]["Races"][0]["Results"][index]["Driver"]["givenName"]
+            nationality = results["MRData"]["RaceTable"]["Races"][0]["Results"][index]["Driver"]["nationality"]
+            team = results["MRData"]["RaceTable"]["Races"][0]["Results"][index]["Constructor"]["name"]
+            puts "#{position} ==> #{pastel.underline("Driver:")} #{family_name}, #{given_name}. #{pastel.underline("Nationality:")} #{nationality} #{pastel.underline("Team:")} #{team}"
+            index += 1
+          end
         end
-        family_name = results["MRData"]["RaceTable"]["Races"][0]["Results"][index]["Driver"]["familyName"]
-        given_name = results["MRData"]["RaceTable"]["Races"][0]["Results"][index]["Driver"]["givenName"]
-        nationality = results["MRData"]["RaceTable"]["Races"][0]["Results"][index]["Driver"]["nationality"]
-        team = results["MRData"]["RaceTable"]["Races"][0]["Results"][index]["Constructor"]["name"]
-        puts "#{position} ==> #{pastel.underline("Driver:")} #{family_name}, #{given_name}. #{pastel.underline("Nationality:")} #{nationality} #{pastel.underline("Team:")} #{team}"
-        index += 1
       end
     end
 
@@ -215,6 +220,8 @@ def formula_one()
         puts "Driver: #{family_name}, #{given_name}. Nationality: #{nationality}  ||  Total Points: #{total_points}. Overall Position: #{position}."
         index += 1
       end
+      puts "\n"
+      puts "Enter M to go back to the main menu."
     end
 
     if input == "3"
@@ -273,22 +280,30 @@ def formula_one()
         index += 1
       end
       puts table.render(:ascii, alignments: [:center, :center, :center, :center], width: 70, resize: true)
+
+      puts "\n"
+      puts "Enter M to go back to the main menu."
     end
 
     if input == "4"
-      puts "Which year would you like results for?"
-      year = gets.chomp
+      while true
+        puts "#{pastel.yellow.bold("Which year would you like results for? Enter in any year from 1950 to 2022.")} Otherwise, enter #{pastel.green.bold("M")} to return to the main menu."
 
-      response = HTTP.get("https://ergast.com/api/f1/#{year}/driverStandings.json")
-      output = response.parse(:json)
-      index = 0
+        year = gets.chomp
+        if year.downcase == "m"
+          formula_one()
+        else
+          response = HTTP.get("https://ergast.com/api/f1/#{year}/driverStandings.json")
+          output = response.parse(:json)
 
-      family_name = output["MRData"]["StandingsTable"]["StandingsLists"][0]["DriverStandings"][0]["Driver"]["familyName"]
-      given_name = output["MRData"]["StandingsTable"]["StandingsLists"][0]["DriverStandings"][0]["Driver"]["givenName"]
-      nationality = output["MRData"]["StandingsTable"]["StandingsLists"][0]["DriverStandings"][0]["Driver"]["nationality"]
-      constructor = output["MRData"]["StandingsTable"]["StandingsLists"][0]["DriverStandings"][0]["Constructors"][0]["name"]
+          family_name = output["MRData"]["StandingsTable"]["StandingsLists"][0]["DriverStandings"][0]["Driver"]["familyName"]
+          given_name = output["MRData"]["StandingsTable"]["StandingsLists"][0]["DriverStandings"][0]["Driver"]["givenName"]
+          nationality = output["MRData"]["StandingsTable"]["StandingsLists"][0]["DriverStandings"][0]["Driver"]["nationality"]
+          constructor = output["MRData"]["StandingsTable"]["StandingsLists"][0]["DriverStandings"][0]["Constructors"][0]["name"]
 
-      puts "Driver: #{family_name}, #{given_name}. Nationality: #{nationality} || Constructor: #{constructor}"
+          puts "#{pastel.red.bold("Driver:")} #{family_name}, #{given_name}. #{pastel.red.bold("Nationality:")} #{nationality} || #{pastel.red.bold ("Constructor:")} #{constructor}"
+        end
+      end
     end
 
     if input == "M"
@@ -296,7 +311,6 @@ def formula_one()
     end
 
     if input == "X"
-      puts pastel.italic.green("THANKS FOR RACING THROUGH MY APP!")
       break
     end
   end
